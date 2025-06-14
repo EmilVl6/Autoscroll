@@ -1,0 +1,44 @@
+{
+    "manifest_version": 3,
+    "name": "Autoscroll : Automatic Page Scrolling",
+    "description": "Cleanest web-extension to seamlessly scroll any webpage",
+    "version": "2.1.0",
+    "permissions":[
+      "storage",
+      "commands"
+    ],
+    "host_permissions": [
+      "<all_urls>"
+    ],
+    "icons":{
+        "128": "UI & Design Elements/Autoscroll_Logo_128.png",
+        "48": "UI & Design Elements/Autoscroll_Logo_48.png",
+        "16": "UI & Design Elements/Autoscroll_Logo_16.png"
+    },
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["scroll.js"]
+    }
+  ],
+  "background": {
+    "service_worker": "backgroundProcess.js"
+  },
+  "commands": {
+    "scroll-up": {
+      "suggested_key": {
+        "default": "Alt+Shift+U"
+      },
+      "description": "Scroll Up"
+    },
+    "scroll-down": {
+      "suggested_key": {
+        "default": "Alt+Shift+D"
+      },
+      "description": "Scroll Down"
+    }
+  }
+}

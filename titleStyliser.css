@@ -1,0 +1,18 @@
+h1 {
+    font-size: 35px;
+    font-family: sans-serif;
+    background: linear-gradient(to right, rgba(255, 215, 255, 0) 0%, rgba(225, 255, 255, 0) 20%, rgba(255, 255, 255, 0) 61%), linear-gradient(rgb(255, 255, 255) 52%, rgb(255, 127, 39) 60%, rgb(0, 0, 0) 61%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: wave 2000ms ease alternate infinite;
+    transition: all 0.4s ease;
+  }
+  @keyframes wave {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 50vw 5px;
+    }
+  }

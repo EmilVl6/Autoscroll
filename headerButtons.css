@@ -1,0 +1,67 @@
+.theme-button {
+    appearance: none;
+    background-color: #00000000;
+    border-style: none;
+    box-shadow: none;
+    box-sizing: border-box;
+    color: #00000000;
+    cursor: pointer;
+    display: inline-flex;
+    fill: currentcolor;
+    position: relative;
+    border-radius: 10px;
+    padding-left: 0px;
+    padding-right: 0px;
+  }
+
+.help-button{
+    appearance: none;
+    background-color: #00000000;
+    border-style: none;
+    box-shadow: none;
+    box-sizing: border-box;
+    color: #00000000;
+    cursor: pointer;
+    display: inline-flex;
+    fill: currentcolor;
+    position: relative;
+    border-radius: 10px;
+    padding-left: 0px;
+    padding-right: 0px;
+ }  
+
+.settings-button{
+    appearance: none;
+    background-color: #00000000;
+    border-style: none;
+    box-shadow: none;
+    box-sizing: border-box;
+    color: #00000000;
+    cursor: pointer;
+    display: inline-flex;
+    fill: currentcolor;
+    position: relative;
+    border-radius: 10px;
+    padding-left: 0px;
+    padding-right: 0px;
+    transition: transform 0.3s ease-in-out;
+}  
+
+.settings-button:hover {
+  transform: rotate(180deg);
+}
+
+ .spacer{
+    appearance: none;
+    background-color: #00000000;
+    border-style: none;
+    box-shadow: none;
+    box-sizing: border-box;
+    color: #00000000;
+    display: inline-flex;
+    fill: currentcolor;
+    position: relative;
+    border-radius: 10px;
+    padding-left: 40px;
+    padding-right: 40px;
+ }

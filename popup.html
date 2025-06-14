@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Autoscroll</title>
+    <link rel="stylesheet" href="headerButtons.css">
+    <link rel="stylesheet" href="functionButtons.css">
+    <link rel="stylesheet" href="titleStyliser.css">
+    <link rel="stylesheet" href="sliderStyliser.css">
+    <link rel="stylesheet" href="rangeText.css">
+    <style>
+    .button-container {
+        display: flex;
+        align-items: center;
+    }
+    
+    .theme-button, .help-button, .spacer {
+        margin: 0 5px; 
+    }
+    </style>
+  </head>  
+  <body style="background-color: #fa5a00">
+    <div class="button-container">
+    <button class="theme-button" id="logo">
+        <img id="logoImage" src="UI & Design Elements/Autoscroll_Logo_128.png" alt="Logo" width="20px">
+    </button>
+    <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="20px">
+    <button class="help-button" id="help">
+        <img id="helpImage" src="UI & Design Elements/Help_Button_White.png" alt="help" width="20px">
+    </button>
+    <button class="settings-button" id="settings">
+        <img id="settingsImage" src="UI & Design Elements/Settings_Button_White.png" alt="settings" width="20px">
+    </button>
+    </div>
+    <h1>Autoscroll</h1>
+    <div class="slidecontainer">
+      <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+    </div> 
+    <br>
+    <div class="inline">
+      <span id="sent">Selected Speed of Scroll  :  </span>
+      <span id="speed">50</span>
+    </div>
+    <br>
+    <button class="button-wide" id="scrollU">Scroll Up</button>
+    <button class="button-wide" id="scrollD">Scroll Down</button>
+    
+    <script src="themeButton.js"></script>
+    <script src="headerButtons.js"></script>
+    <script src="scroll.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>DSettings</title>
+    <link rel="stylesheet" href="switchStyliser.css">
+    <style>
+        body {
+            width: 175px;
+            height: 175px;
+            background: rgb(255, 90, 0);
+        }
+        .container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0px;
+            max-height: 38.5px;
+        }
+        .spacer{
+            appearance: none;
+            background-color: #00000000;
+            border-style: none;
+            box-shadow: none;
+            box-sizing: border-box;
+            color: #00000000;
+            display: inline-flex;
+            fill: currentcolor;
+            position: relative;
+            border-radius: 10px;
+            padding-left: 25px;
+            padding-right: 25px;
+        }
+        .theme-button {
+            appearance: none;
+            background-color: #00000000;
+            border-style: none;
+            box-shadow: none;
+            box-sizing: border-box;
+            color: #00000000;
+            cursor: pointer;
+            display: inline-flex;
+            fill: currentcolor;
+            position: relative;
+            padding-left: 0px;
+            padding-right: 0px;
+        }      
+        h5{
+            line-height: 1;
+        }
+    </style>
+  </head>
+
+<body>
+    <div class="container">
+    <img src="UI & Design Elements/Settings.png" alt="Settings" width="100px">
+    <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="20px">
+    <button class="theme-button" id="back">
+        <img src="UI & Design Elements/Autoscroll_Logo_128.png" alt="Back" width="20px">
+    </button>
+    </div>
+    <div class="container">
+    <h5>v2.1.0</h5>
+    <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="70px" height="10px">
+    <button class="theme-button" id="bmac">
+        <img src="UI & Design Elements/bmac.png" alt="Donate" width="75px">
+    </button>
+    </div>
+    <div class="container">
+        <h5>Feedback</h5>
+        <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="55px" height="10px">
+        <button class="theme-button" id="forms">
+            <img src="UI & Design Elements/forms.png" alt="Feedback" width="75px">
+        </button>
+        </div>
+    <div class="container">
+        <h5>Rebound at edge</h5>
+        <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="62px" height="10px">
+        <label class="switch">
+            <input type="checkbox" id="reboundEdge">
+            <span class="slider round"></span>
+          </label>
+    </div>
+    <div class="container">
+        <h5>Shortcut (Up):</h5>
+        <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="70px" height="10px">
+        <h5>alt+shift+u</h5>
+    </div>
+    <div class="container">
+        <h5>Shortcut (Down):</h5>
+        <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="56px" height="10px">
+        <h5>alt+shift+d</h5>
+    </div>
+    <script src="settings.js"></script>
+</body>
+</html>

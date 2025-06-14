@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Autoscroll</title>
+    <link rel="stylesheet" href="gButton.css">
+    <link rel="stylesheet" href="hButton.css">
+    <link rel="stylesheet" href="aSlider.css">
+    <style>
+      h1 {
+        font-size: 35px;
+        font-family: sans-serif;
+        background: linear-gradient(to right, rgba(255, 215, 255, 0) 0%, rgba(225, 255, 255, 0.5) 20%, rgba(255, 255, 255, 0) 61%), linear-gradient(rgb(250, 135, 55) 52%, rgb(224, 246, 255) 60%, rgb(0, 0, 0) 61%);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: wave 2000ms ease alternate infinite;
+        transition: all 0.4s ease;
+      }
+      @keyframes wave {
+        0% {
+          background-position: 0 0;
+        }
+        100% {
+          background-position: 50vw 5px;
+        }
+      }
+      .image_logo{
+        padding-right:130px;
+        padding-top:15px;
+      }
+      .inline{
+        display: inline-flex;
+      }
+    </style>
+  </head>
+  <body>
+    <img class="image_logo" src="Logo_Inverted_W.png" alt="Logo_Inverted" width="19px";>
+    <button class="button-help" id="Help">
+    <img src="Help.png" alt="Logo_Inverted" width="19px">
+    </button>
+    <h1>Autoscroll</h1>
+    <div class="slidecontainer">
+      <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
+    </div>  
+    <div class="inline">
+    <h6>Selected Speed of Scroll  :  </h6>
+    <h6 id="speed">50</h6>
+    </div>
+    <br>
+    <button class="button-wide" id="ScrollU">Scroll Up</button>
+    <button class="button-wide" id="ScrollD">Scroll Down</button>    
+    <script src="scroll.js"></script>
+  </body>
+</html>
+
