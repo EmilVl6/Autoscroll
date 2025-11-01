@@ -1,5 +1,6 @@
 const sent = document.getElementById('sent');
 const sped = document.getElementById('speed');
+const speedLabel = document.getElementById('speedLabel');
 const logoButton = document.getElementById('logo');
 const logoImage = document.getElementById('logoImage');
 const helpImage = document.getElementById('helpImage');
@@ -66,4 +67,5 @@ logoButton.addEventListener('click', () => {
 
     sped.style.color=currentData.txt;
     sent.style.color=currentData.txt;
+    speedLabel.style.color=currentData.txt;
 });

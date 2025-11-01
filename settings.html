@@ -1,94 +1,192 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>DSettings</title>
+    <title>Settings</title>
     <link rel="stylesheet" href="switchStyliser.css">
     <style>
         body {
-            width: 175px;
-            height: 175px;
+            width: 190px;
+            height: 200px;
             background: rgb(255, 90, 0);
+            margin: 0;
+            padding: 8px 8px 12px 8px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            box-sizing: border-box;
         }
-        .container {
+        
+        .header {
             display: flex;
             align-items: center;
-            margin-bottom: 0px;
-            max-height: 38.5px;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            padding: 2px;
         }
-        .spacer{
-            appearance: none;
-            background-color: #00000000;
-            border-style: none;
-            box-shadow: none;
-            box-sizing: border-box;
-            color: #00000000;
-            display: inline-flex;
-            fill: currentcolor;
-            position: relative;
-            border-radius: 10px;
-            padding-left: 25px;
-            padding-right: 25px;
+        
+        .settings-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .theme-button {
-            appearance: none;
-            background-color: #00000000;
-            border-style: none;
-            box-shadow: none;
-            box-sizing: border-box;
-            color: #00000000;
+        
+        .settings-title img {
+            width: 24px;
+            height: 24px;
+        }
+        
+        .settings-title h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #000;
+        }
+        
+        .version {
+            font-size: 11px;
+            color: rgba(0,0,0,0.6);
+            font-weight: 500;
+        }
+        
+        .setting-section {
+            background: rgb(255, 90, 0);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .setting-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .setting-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #000;
+        }
+        
+        .shortcut-key {
+            background: rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 10px;
+            font-family: monospace;
+            color: #000;
+            font-weight: 600;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .btn {
+            flex: 1;
+            background: rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.2);
+            border-radius: 6px;
+            padding: 0;
+            font-size: 11px;
+            font-weight: 600;
+            color: #000;
             cursor: pointer;
-            display: inline-flex;
-            fill: currentcolor;
-            position: relative;
-            padding-left: 0px;
-            padding-right: 0px;
-        }      
-        h5{
-            line-height: 1;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            overflow: hidden;
+            height: 24px;
+        }
+        
+        .btn:hover {
+            background: rgba(0,0,0,0.2);
+            transform: translateY(-1px);
+        }
+        
+        .btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+        
+        .back-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 2px;
+            border-radius: 4px;
+            transition: none;
+        }
+        
+        .back-btn:hover {
+            background: transparent;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .back-btn img {
+            width: 20px;
+            height: 20px;
         }
     </style>
   </head>
 
 <body>
-    <div class="container">
-    <img src="UI & Design Elements/Settings.png" alt="Settings" width="100px">
-    <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="20px">
-    <button class="theme-button" id="back">
-        <img src="UI & Design Elements/Autoscroll_Logo_128.png" alt="Back" width="20px">
-    </button>
-    </div>
-    <div class="container">
-    <h5>v2.1.0</h5>
-    <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="70px" height="10px">
-    <button class="theme-button" id="bmac">
-        <img src="UI & Design Elements/bmac.png" alt="Donate" width="75px">
-    </button>
-    </div>
-    <div class="container">
-        <h5>Feedback</h5>
-        <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="55px" height="10px">
-        <button class="theme-button" id="forms">
-            <img src="UI & Design Elements/forms.png" alt="Feedback" width="75px">
-        </button>
+    <div class="header">
+        <div class="settings-title">
+            <img src="UI & Design Elements/Settings.png" alt="Settings" style="width: 80px; height: auto;">
+            <div class="version" style="font-size: 9px;">v2.1.0</div>
         </div>
-    <div class="container">
-        <h5>Rebound at edge</h5>
-        <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="62px" height="10px">
-        <label class="switch">
-            <input type="checkbox" id="reboundEdge">
-            <span class="slider round"></span>
-          </label>
+        <button class="back-btn" id="back">
+            <img src="UI & Design Elements/Autoscroll_Logo_128.png" alt="Back" style="width: 20px; height: 20px;">
+        </button>
     </div>
-    <div class="container">
-        <h5>Shortcut (Up):</h5>
-        <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="70px" height="10px">
-        <h5>alt+shift+u</h5>
+
+    <div class="setting-section">
+        <div class="setting-item">
+            <span class="setting-label">Rebound at edge</span>
+            <label class="switch">
+                <input type="checkbox" id="reboundEdge">
+                <span class="slider round"></span>
+            </label>
+        </div>
     </div>
-    <div class="container">
-        <h5>Shortcut (Down):</h5>
-        <img class="spacer" id="spacer" src="UI & Design Elements/Spacer.png" alt="Spacer" width="56px" height="10px">
-        <h5>alt+shift+d</h5>
+
+    <div class="setting-section">
+        <div class="setting-label" style="margin-bottom: 8px;">Keyboard Shortcuts</div>
+        <div class="setting-item">
+            <span class="setting-label">Scroll Up</span>
+            <span class="shortcut-key">alt+shift+u</span>
+        </div>
+        <div class="setting-item">
+            <span class="setting-label">Scroll Down</span>
+            <span class="shortcut-key">alt+shift+d</span>
+        </div>
     </div>
+
+    <div class="action-buttons">
+        <button class="btn" id="forms">
+            <img src="UI & Design Elements/forms.png" alt="Feedback">
+        </button>
+        <button class="btn" id="bmac">
+            <img src="UI & Design Elements/bmac.png" alt="Coffee">
+        </button>
+    </div>
+
+    <div style="height: 12px;"></div>
+
     <script src="settings.js"></script>
 </body>
 </html>

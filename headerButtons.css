@@ -41,14 +41,22 @@
     display: inline-flex;
     fill: currentcolor;
     position: relative;
-    border-radius: 10px;
-    padding-left: 0px;
-    padding-right: 0px;
+    border-radius: 50%;
+    padding: 2px;
+    overflow: hidden;
+    width: 24px;
+    height: 24px;
+    justify-content: center;
+    align-items: center;
     transition: transform 0.3s ease-in-out;
 }  
 
-.settings-button:hover {
-  transform: rotate(180deg);
+.settings-button img {
+    transition: transform 0.3s ease-in-out;
+}
+
+.settings-button:hover img {
+    transform: rotate(90deg);
 }
 
  .spacer{

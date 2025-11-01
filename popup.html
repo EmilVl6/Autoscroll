@@ -16,6 +16,51 @@
     .theme-button, .help-button, .spacer {
         margin: 0 5px; 
     }
+    
+    #tempMessage {
+        background: #f44336;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+        font-size: 11px;
+        text-align: center;
+        margin: 5px 0;
+        display: none;
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .speed-indicator {
+        white-space: nowrap;
+        font-size: 12px;
+        opacity: 0.8;
+        margin-left: 2px;
+    }
+    
+    .inline {
+        white-space: nowrap;
+        overflow: hidden;
+        display: flex;
+        align-items: baseline;
+        justify-content: center;
+        padding-left: 10px;
+        width: 160px;
+    }
+    
+    .inline span {
+        display: inline-block;
+    }
+    
+    body {
+        width: 190px;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 8px;
+    }
     </style>
   </head>  
   <body style="background-color: #fa5a00">
@@ -37,8 +82,8 @@
     </div> 
     <br>
     <div class="inline">
-      <span id="sent">Selected Speed of Scroll  :  </span>
-      <span id="speed">50</span>
+      <span id="sent">Speed  :  </span>
+      <span id="speed">50</span><span id="speedLabel" class="speed-indicator"> (Medium)</span>
     </div>
     <br>
     <button class="button-wide" id="scrollU">Scroll Up</button>

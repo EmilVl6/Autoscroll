@@ -15,7 +15,9 @@ bmacButton.addEventListener('click', () => {
 });
 
 formButton.addEventListener('click', () => {
-    window.open('https://forms.gle/Zzjt6YXViG1Uoeoe8', '_blank');
+    const url = 'https://9cv7ofgnsad.typeform.com/to/nqLkVkJT';
+    console.log('Opening feedback form:', url);
+    window.open(url, '_blank');
 });
 
 reboundCheckbox.addEventListener('change', () => {

@@ -5,7 +5,8 @@
     "version": "2.1.0",
     "permissions":[
       "storage",
-      "commands"
+      "commands",
+      "scripting"
     ],
     "host_permissions": [
       "<all_urls>"
