@@ -1,5 +1,5 @@
-# Autoscroll
-Autoscroll : Automatic Page Scrolling
+# Autoscroll™
+[Autoscroll : Automatic Page Scrolling](https://chromewebstore.google.com/detail/autoscroll-automatic-page/mofpoefmipkeaakcglcfamacffochlid)
 
 Guide : [autoscroll.org](https://www.autoscroll.org/)
 
