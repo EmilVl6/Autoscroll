@@ -3,7 +3,7 @@
 
 Guide : [autoscroll.org](https://www.autoscroll.org/)
 
-v2.1.1 Updates
+v2.1.2 Updates
 
 ★ Improved UI \
 ★ Settings Page Redesign \
