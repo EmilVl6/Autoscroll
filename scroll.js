@@ -7,6 +7,9 @@ var isScrolling = false;
 var scrollTarget = null;
 var scrollMethod = 'window';
 var currentDirection = 0;
+var atEdgeCheckInProgress = false;
+var atEdgeTimeout = null;
+var lastKnownScrollHeight = 0;
 
 function detectScrollTarget() {
   console.log('Detecting scroll target...');
@@ -238,13 +241,22 @@ function startScrolling() {
         try {
           const rebound = !!result.reboundAtEdge;
           const atLimit = isAtScrollLimit(currentDirection);
-          
+
+          try {
+            if (scrollTarget && scrollTarget !== window && !document.contains(scrollTarget)) {
+              console.log('Scroll target was removed from DOM; resetting scrollTarget');
+              scrollTarget = null;
+              scrollMethod = 'window';
+            }
+          } catch (err) {
+          }
+
           if (atLimit) {
             if (rebound) {
               const oldDirection = currentDirection;
               currentDirection = -currentDirection;
               console.log('Rebound: reversed direction from', oldDirection > 0 ? 'down' : 'up', 'to', currentDirection > 0 ? 'down' : 'up');
-              
+
               chrome.runtime.sendMessage({
                 action: 'reboundDirectionChange',
                 newDirection: currentDirection > 0 ? 'down' : 'up',
@@ -252,22 +264,62 @@ function startScrolling() {
               }).catch(err => {
                 console.log('Could not notify popup of rebound:', err.message);
               });
-              
+
             } else {
-              console.log('Reached scroll limit, stopping...');
-              isScrolling = false;
-              currentDirection = 0;
-              clearInterval(intervalId);
-              intervalId = null;
-              
-              chrome.runtime.sendMessage({
-                action: 'scrollStopped',
-                reason: 'reachedEdge',
-                direction: currentDirection > 0 ? 'down' : 'up'
-              }).catch(err => {
-                console.log('Could not notify popup:', err.message);
-              });
-              return;
+              if (!atEdgeCheckInProgress) {
+                atEdgeCheckInProgress = true;
+                lastKnownScrollHeight = (function () {
+                  try {
+                    switch (scrollMethod) {
+                      case 'window': return document.documentElement.scrollHeight || document.body.scrollHeight || 0;
+                      case 'element':
+                      case 'documentElement': return scrollTarget ? (scrollTarget.scrollHeight || 0) : (document.documentElement.scrollHeight || 0);
+                      default: return document.documentElement.scrollHeight || 0;
+                    }
+                  } catch (e) { return document.documentElement.scrollHeight || 0; }
+                })();
+
+                atEdgeTimeout = setTimeout(() => {
+                  atEdgeCheckInProgress = false;
+                  try {
+                    const newHeight = (function () {
+                      try {
+                        switch (scrollMethod) {
+                          case 'window': return document.documentElement.scrollHeight || document.body.scrollHeight || 0;
+                          case 'element':
+                          case 'documentElement': return scrollTarget ? (scrollTarget.scrollHeight || 0) : (document.documentElement.scrollHeight || 0);
+                          default: return document.documentElement.scrollHeight || 0;
+                        }
+                      } catch (e) { return document.documentElement.scrollHeight || 0; }
+                    })();
+
+                    if (newHeight > lastKnownScrollHeight + 30) {
+                      console.log('New content detected while at edge (height increased from', lastKnownScrollHeight, 'to', newHeight, '), continuing scroll');
+                    } else {
+                      console.log('No new content detected after waiting, stopping scroll');
+                      isScrolling = false;
+                      currentDirection = 0;
+                      clearInterval(intervalId);
+                      intervalId = null;
+
+                      chrome.runtime.sendMessage({
+                        action: 'scrollStopped',
+                        reason: 'reachedEdge',
+                        direction: currentDirection > 0 ? 'down' : 'up'
+                      }).catch(err => {
+                        console.log('Could not notify popup:', err.message);
+                      });
+                      return;
+                    }
+                  } catch (error) {
+                    console.error('Error during edge re-check:', error);
+                    isScrolling = false;
+                    currentDirection = 0;
+                    clearInterval(intervalId);
+                    intervalId = null;
+                  }
+                }, 1500);
+              }
             }
           }
           
