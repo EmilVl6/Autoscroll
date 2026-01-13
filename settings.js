@@ -16,7 +16,6 @@ bmacButton.addEventListener('click', () => {
 
 formButton.addEventListener('click', () => {
     const url = 'https://9cv7ofgnsad.typeform.com/to/nqLkVkJT';
-    console.log('Opening feedback form:', url);
     window.open(url, '_blank');
 });
 

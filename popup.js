@@ -54,14 +54,11 @@ document.addEventListener("DOMContentLoaded", function() {
             btnu.textContent = 'Scroll Up';
             btnd.textContent = 'Scroll Down';
         }
-        
-        console.log('Button states updated. Active direction:', activeScrollDirection);
     }
 
     function popupScroll(direction) {
         chrome.tabs.query({currentWindow: true, active: true}, function (tabs){
             if (!tabs || !tabs[0]) {
-                console.error('No active tab found');
                 return;
             }
             
@@ -81,7 +78,6 @@ document.addEventListener("DOMContentLoaded", function() {
             );
             
             if (isRestrictedPage) {
-                console.log('Cannot scroll on restricted page:', activeTab.url);
                 showTemporaryMessage('Cannot scroll on this type of page, sorry :(');
                 return;
             }
@@ -94,15 +90,11 @@ document.addEventListener("DOMContentLoaded", function() {
             }, function(response) {
                 if (chrome.runtime.lastError) {
                     const errorMsg = chrome.runtime.lastError.message || 'Unknown error';
-                    console.log('Error sending message (handled):', errorMsg);
                     
                     activeScrollDirection = null;
                     
                     if (errorMsg.includes('Could not establish connection')) {
-                        console.log('Content script not loaded, attempting to inject...');
-                        
                         if (!chrome.runtime || !chrome.runtime.id) {
-                            console.log('Extension context invalidated, skipping injection');
                             return;
                         }
                         
@@ -112,24 +104,18 @@ document.addEventListener("DOMContentLoaded", function() {
                         }, function() {
                             if (chrome.runtime.lastError) {
                                 const injectError = chrome.runtime.lastError.message;
-                                console.error('Content script injection failed:', injectError);
                                 
                                 if (injectError.includes('chrome://') || 
                                     injectError.includes('extensions gallery') ||
                                     injectError.includes('cannot be scripted')) {
-                                    console.log('Page cannot be scripted (expected behavior)');
                                     showTemporaryMessage('Cannot scroll on this page type, sorry :(');
                                 } else {
-                                    console.log('Failed to inject content script (handled):', injectError);
                                     showTemporaryMessage('Failed to load extension on this page, sorry :(');
                                 }
                                 updateButtonStates();
                             } else {
-                                console.log('Content script injected successfully, retrying message...');
-                                
                                 setTimeout(() => {
                                     if (!chrome.runtime || !chrome.runtime.id) {
-                                        console.log('Extension context invalidated, skipping retry');
                                         return;
                                     }
                                     
@@ -138,22 +124,17 @@ document.addEventListener("DOMContentLoaded", function() {
                                         "sliderValue": slider.value
                                     }, function(retryResponse) {
                                         if (chrome.runtime.lastError) {
-                                            console.log('Retry failed (handled):', chrome.runtime.lastError.message);
                                             activeScrollDirection = null;
                                             showTemporaryMessage('Extension failed to start, sorry :(');
                                         } else if (retryResponse && retryResponse.success) {
-                                            console.log('Retry successful:', retryResponse);
                                             if (retryResponse.action === 'started') {
                                                 activeScrollDirection = direction;
                                             } else if (retryResponse.action === 'stopped') {
                                                 activeScrollDirection = null;
                                             } else if (retryResponse.action === 'direction_changed') {
                                                 activeScrollDirection = direction;
-                                            } else if (retryResponse.action === 'ignored') {
-                                                console.log('Action ignored on retry:', retryResponse.reason);
                                             }
                                         } else {
-                                            console.warn('No response on retry');
                                             activeScrollDirection = null;
                                         }
                                         updateButtonStates();
@@ -165,36 +146,29 @@ document.addEventListener("DOMContentLoaded", function() {
                         showTemporaryMessage('Cannot scroll on this page, sorry :(');
                     }
                 } else if (response && response.success) {
-                    console.log('Message sent successfully:', response);
-                    
                     if (response.action === 'started') {
                         activeScrollDirection = direction;
                     } else if (response.action === 'stopped') {
                         activeScrollDirection = null;
                     } else if (response.action === 'direction_changed') {
                         activeScrollDirection = direction;
-                        console.log('Direction changed to:', response.direction);
-                    } else if (response.action === 'ignored') {
-                        console.log('Action ignored:', response.reason);
                     }
+                } else if (response && !response.success) {
+                    activeScrollDirection = null;
+                    showTemporaryMessage(response.error || 'Cannot scroll on this page, sorry :(');
                 } else {
-                    console.warn('No response or unsuccessful response');
                     activeScrollDirection = null;
                 }
                 updateButtonStates();
             });
-            
-            console.log("Message sent:", activeTab.id, {"message": direction, "sliderValue": slider.value});
         });
     }
 
     btnu.addEventListener('click', function() {
-        console.log('Scroll Up button clicked');
         popupScroll('up');
     });
     
     btnd.addEventListener('click', function() {
-        console.log('Scroll Down button clicked');
         popupScroll('down');
     });
     
@@ -208,17 +182,12 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         
         saveSpeedTimeout = setTimeout(() => {
-            chrome.storage.sync.set({ scrollSpeed: parseInt(slider.value) }, function() {
-                if (chrome.runtime.lastError) {
-                    console.log('Failed to save speed setting:', chrome.runtime.lastError.message);
-                }
-            });
+            chrome.storage.sync.set({ scrollSpeed: parseInt(slider.value) });
         }, 500);
     });
     
     chrome.storage.sync.get(['scrollSpeed'], function(result) {
         if (chrome.runtime.lastError) {
-            console.log('Storage access error (extension context may be invalidated):', chrome.runtime.lastError.message);
             updateSpeedDisplay();
             updateButtonStates();
             return;
@@ -228,34 +197,46 @@ document.addEventListener("DOMContentLoaded", function() {
             slider.value = result.scrollSpeed;
         }
         updateSpeedDisplay();
-        updateButtonStates();
+        
+        chrome.tabs.query({currentWindow: true, active: true}, function(tabs) {
+            if (tabs && tabs[0]) {
+                chrome.tabs.sendMessage(tabs[0].id, {action: 'getScrollState'}, function(response) {
+                    if (chrome.runtime.lastError) {
+                        updateButtonStates();
+                        return;
+                    }
+                    if (response && response.success && response.isScrolling) {
+                        activeScrollDirection = response.direction;
+                    }
+                    updateButtonStates();
+                });
+            } else {
+                updateButtonStates();
+            }
+        });
     });
     
     chrome.runtime.onMessage.addListener(function(message, sender, sendResponse) {
         if (message.action === 'scrollStopped') {
-            console.log('Scrolling stopped automatically:', message.reason, 'was direction:', message.direction);
             activeScrollDirection = null;
             updateButtonStates();
-        } else if (message.action === 'reboundDirectionChange') {
-            console.log('Rebound direction change:', message.oldDirection, '→', message.newDirection);
+        } else if (message.action === 'scrollResumed') {
+            activeScrollDirection = message.direction;
+            updateButtonStates();
+        } else if (message.action === 'reboundDirection') {
             activeScrollDirection = message.newDirection;
             updateButtonStates();
         } else if (message.action === 'shortcutUsed') {
-            console.log('Shortcut used:', message.direction, 'response:', message.response);
-            
             if (message.response.action === 'started') {
                 activeScrollDirection = message.direction;
             } else if (message.response.action === 'stopped') {
                 activeScrollDirection = null;
             } else if (message.response.action === 'direction_changed') {
                 activeScrollDirection = message.direction;
-            } else if (message.response.action === 'ignored') {
-                console.log('Shortcut action ignored:', message.response.reason);
             }
             
             updateButtonStates();
         } else if (message.action === 'shortcutError') {
-            console.log('Shortcut error:', message.message);
             showTemporaryMessage(message.message);
         }
     });

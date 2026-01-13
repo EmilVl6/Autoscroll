@@ -1,7 +1,6 @@
 var direction = '';
-var scaling = 40;
 var speed = 50;
-var mapSpeed = 15;
+var scrollDistance = 1;
 var intervalId = null;
 var isScrolling = false;
 var scrollTarget = null;
@@ -10,35 +9,60 @@ var currentDirection = 0;
 var atEdgeCheckInProgress = false;
 var atEdgeTimeout = null;
 var lastKnownScrollHeight = 0;
+var cachedReboundSetting = false;
+var scrollTargetDetected = false;
 
 function detectScrollTarget() {
-  console.log('Detecting scroll target...');
+  const prioritySelectors = [
+    'main [class*="scroll"]',
+    'main .overflow-y-auto',
+    '[class*="conversation"]',
+    'main > div > div',
+    '[role="main"] > div',
+  ];
   
-  const initialScrollY = window.scrollY;
-  window.scrollBy(0, 1);
-  if (window.scrollY !== initialScrollY) {
-    window.scrollBy(0, -1);
-    console.log('Using window scroll');
-    return { element: window, method: 'window' };
+  for (let selector of prioritySelectors) {
+    try {
+      const el = document.querySelector(selector);
+      if (el) {
+        const style = window.getComputedStyle(el);
+        const hasOverflow = style.overflowY === 'scroll' || style.overflowY === 'auto' || style.overflow === 'auto' || style.overflow === 'scroll';
+        const hasHeight = el.scrollHeight > el.clientHeight + 10;
+        
+        if (hasOverflow && hasHeight) {
+          const initialScroll = el.scrollTop;
+          el.scrollTop += 3;
+          if (el.scrollTop !== initialScroll) {
+            el.scrollTop = initialScroll;
+            return { element: el, method: 'element' };
+          }
+        }
+      }
+    } catch (e) {}
   }
   
   const scrollableElements = [];
-  const allElements = document.querySelectorAll('*');
   
+  const allElements = document.querySelectorAll('*');
   for (let el of allElements) {
     const style = window.getComputedStyle(el);
-    const hasOverflow = style.overflowY === 'scroll' || style.overflowY === 'auto';
-    const hasHeight = el.scrollHeight > el.clientHeight;
+    const hasOverflow = style.overflowY === 'scroll' || style.overflowY === 'auto' || style.overflow === 'auto' || style.overflow === 'scroll';
+    const hasHeight = el.scrollHeight > el.clientHeight + 5;
     
-    if (hasOverflow && hasHeight && el.scrollHeight > 100) {
+    if (hasOverflow && hasHeight) {
       const initialScroll = el.scrollTop;
-      el.scrollTop += 1;
+      el.scrollTop += 2;
       if (el.scrollTop !== initialScroll) {
         el.scrollTop = initialScroll;
+        const area = el.clientHeight * el.clientWidth;
+        const viewportArea = window.innerHeight * window.innerWidth;
+        const areaRatio = area / viewportArea;
         scrollableElements.push({
           element: el,
           scrollHeight: el.scrollHeight,
           clientHeight: el.clientHeight,
+          area: area,
+          areaRatio: areaRatio,
           ratio: el.scrollHeight / el.clientHeight
         });
       }
@@ -46,52 +70,51 @@ function detectScrollTarget() {
   }
   
   if (scrollableElements.length > 0) {
-    scrollableElements.sort((a, b) => b.ratio - a.ratio);
-    console.log('Using scrollable container:', scrollableElements[0].element);
+    scrollableElements.sort((a, b) => {
+      const aScore = a.areaRatio * a.ratio;
+      const bScore = b.areaRatio * b.ratio;
+      return bScore - aScore;
+    });
     return { element: scrollableElements[0].element, method: 'element' };
   }
   
-  const commonSelectors = [
-    'main', '[role="main"]', '.main-content', '#main',
-    '.content', '.page-content', '.container',
-    'body > div:first-child',
-    '[data-scroll]', '[data-scrollable]'
-  ];
-  
-  for (let selector of commonSelectors) {
-    const el = document.querySelector(selector);
-    if (el && el.scrollHeight > el.clientHeight) {
-      const initialScroll = el.scrollTop;
-      el.scrollTop += 1;
-      if (el.scrollTop !== initialScroll) {
-        el.scrollTop = initialScroll;
-        console.log('Using common selector:', selector);
-        return { element: el, method: 'element' };
-      }
-    }
+  const initialScrollY = window.scrollY;
+  window.scrollBy(0, 2);
+  if (window.scrollY !== initialScrollY) {
+    window.scrollBy(0, -2);
+    return { element: window, method: 'window' };
   }
   
   const docEl = document.documentElement;
-  if (docEl.scrollHeight > docEl.clientHeight) {
-    const initialScroll = docEl.scrollTop;
-    docEl.scrollTop += 1;
-    if (docEl.scrollTop !== initialScroll) {
-      docEl.scrollTop = initialScroll;
-      console.log('Using document.documentElement');
-      return { element: docEl, method: 'documentElement' };
-    }
+  const initialDocScroll = docEl.scrollTop;
+  docEl.scrollTop += 2;
+  if (docEl.scrollTop !== initialDocScroll) {
+    docEl.scrollTop = initialDocScroll;
+    return { element: docEl, method: 'documentElement' };
   }
   
-  console.log('Using scroll events fallback');
-  return { element: window, method: 'events' };
+  const body = document.body;
+  if (body && body.scrollHeight > body.clientHeight) {
+    return { element: body, method: 'element' };
+  }
+  
+  return { element: null, method: 'none' };
 }
 
 function smartScroll(direction, distance) {
-  if (!scrollTarget) {
+  if (!scrollTarget || !scrollTargetDetected) {
     const detected = detectScrollTarget();
     scrollTarget = detected.element;
     scrollMethod = detected.method;
+    scrollTargetDetected = true;
+    
+    if (scrollMethod === 'none' || !scrollTarget) {
+      return false;
+    }
   }
+  
+  const beforeScrollPos = scrollMethod === 'window' ? window.scrollY : 
+                         (scrollTarget && scrollTarget.scrollTop !== undefined ? scrollTarget.scrollTop : 0);
   
   try {
     switch (scrollMethod) {
@@ -101,7 +124,11 @@ function smartScroll(direction, distance) {
         
       case 'element':
       case 'documentElement':
-        scrollTarget.scrollTop += distance * direction;
+        if (scrollTarget && scrollTarget.scrollTop !== undefined) {
+          scrollTarget.scrollTop += distance * direction;
+        } else {
+          return false;
+        }
         break;
         
       case 'events':
@@ -111,21 +138,24 @@ function smartScroll(direction, distance) {
           bubbles: true,
           cancelable: true
         });
-        document.dispatchEvent(scrollEvent);
-        
-        const keyEvent = new KeyboardEvent('keydown', {
-          key: direction > 0 ? 'ArrowDown' : 'ArrowUp',
-          code: direction > 0 ? 'ArrowDown' : 'ArrowUp',
-          bubbles: true,
-          cancelable: true
-        });
-        document.dispatchEvent(keyEvent);
+        if (scrollTarget && scrollTarget !== window) {
+          scrollTarget.dispatchEvent(scrollEvent);
+        } else {
+          document.dispatchEvent(scrollEvent);
+        }
         break;
+        
+      case 'none':
+        return false;
     }
   } catch (error) {
-    console.error('Smart scroll failed:', error);
-    window.scrollBy(0, distance * direction);
+    return false;
   }
+  
+  const afterScrollPos = scrollMethod === 'window' ? window.scrollY : 
+                        (scrollTarget && scrollTarget.scrollTop !== undefined ? scrollTarget.scrollTop : 0);
+  
+  return Math.abs(afterScrollPos - beforeScrollPos) > 0.1;
 }
 
 function isAtScrollLimit(direction) {
@@ -141,15 +171,6 @@ function isAtScrollLimit(direction) {
           const bottomPosition = windowHeight + scrollTop;
           const isAtBottom = bottomPosition >= (scrollHeight - 5);
           
-          console.log('Bottom check:', {
-            scrollHeight,
-            windowHeight, 
-            scrollTop,
-            bottomPosition,
-            threshold: scrollHeight - 5,
-            isAtBottom
-          });
-          
           return isAtBottom;
         }
         
@@ -159,12 +180,6 @@ function isAtScrollLimit(direction) {
           return scrollTarget.scrollTop <= 5;
         } else {
           const isAtBottom = (scrollTarget.scrollTop + scrollTarget.clientHeight) >= (scrollTarget.scrollHeight - 5);
-          console.log('Element bottom check:', {
-            scrollTop: scrollTarget.scrollTop,
-            clientHeight: scrollTarget.clientHeight,
-            scrollHeight: scrollTarget.scrollHeight,
-            isAtBottom
-          });
           return isAtBottom;
         }
         
@@ -172,7 +187,6 @@ function isAtScrollLimit(direction) {
         return false;
     }
   } catch (error) {
-    console.error('Error checking scroll limits:', error);
     return false;
   }
 }
@@ -180,46 +194,69 @@ function isAtScrollLimit(direction) {
 chrome.runtime.onMessage.addListener(
   function (request, sender, sendResponse) {
     try {
-      console.log('scroll.js received message:', request);
+      if (request.action === 'getScrollState') {
+        sendResponse({
+          success: true,
+          isScrolling: isScrolling,
+          direction: currentDirection > 0 ? 'down' : (currentDirection < 0 ? 'up' : null)
+        });
+        return true;
+      }
+
       direction = request.message;
       if (typeof request.sliderValue !== 'undefined') {
         speed = request.sliderValue;
       }
-      mapSpeed = (speed - 1) * ((scaling-1)/99) + 1;
+      const normalizedSpeed = (speed - 1) / 99;
+      const curvedSpeed = Math.pow(normalizedSpeed, 2.2);
+      scrollDistance = curvedSpeed * 140 + 0.6;
 
       const requestedDirection = direction === 'up' ? -1 : 1;
       const atEdgeForDirection = isAtScrollLimit(requestedDirection);
       
       if(isScrolling && currentDirection === requestedDirection) {
-        console.log('Stopping scroll - same direction clicked');
         isScrolling = false;
         currentDirection = 0;
         clearInterval(intervalId);
         intervalId = null;
+        if (atEdgeTimeout) {
+          clearTimeout(atEdgeTimeout);
+          atEdgeTimeout = null;
+        }
+        atEdgeCheckInProgress = false;
+        sendResponse({success: true, action: 'stopped'});
+      } else if (!isScrolling && atEdgeCheckInProgress && currentDirection === 0) {
+        if (atEdgeTimeout) {
+          clearTimeout(atEdgeTimeout);
+          atEdgeTimeout = null;
+        }
+        atEdgeCheckInProgress = false;
         sendResponse({success: true, action: 'stopped'});
       } else if (isScrolling && currentDirection !== requestedDirection) {
         if (atEdgeForDirection) {
-          console.log('Ignoring direction change - already at edge for requested direction');
           sendResponse({success: true, action: 'ignored', reason: 'at_edge'});
         } else {
-          console.log('Changing direction from', currentDirection > 0 ? 'down' : 'up', 'to', requestedDirection > 0 ? 'down' : 'up');
           currentDirection = requestedDirection;
           sendResponse({success: true, action: 'direction_changed', direction: direction, method: scrollMethod});
         }
       } else {
         if (atEdgeForDirection) {
-          console.log('Ignoring scroll start - at edge for requested direction');
           sendResponse({success: true, action: 'ignored', reason: 'at_edge'});
         } else {
           scrollTarget = null;
+          scrollTargetDetected = false;
           scrollMethod = 'window';
+          
           currentDirection = requestedDirection;
           isScrolling = true;
+          
+          chrome.storage.sync.get(['reboundAtEdge'], (result) => {
+            cachedReboundSetting = !!result.reboundAtEdge;
+          });
           
           const oppositeDirection = -requestedDirection;
           const nearOppositeEdge = isAtScrollLimit(oppositeDirection);
           if (nearOppositeEdge) {
-            console.log('Near opposite edge, giving small nudge away from edge');
             window.scrollBy(0, requestedDirection * 3);
           }
           
@@ -228,7 +265,6 @@ chrome.runtime.onMessage.addListener(
         }
       }
     } catch (error) {
-      console.error('Error in scroll.js message handler:', error);
       sendResponse({success: false, error: error.message});
     }
   }
@@ -237,107 +273,117 @@ chrome.runtime.onMessage.addListener(
 function startScrolling() {
   try {
     intervalId = setInterval(function () {
-      chrome.storage.sync.get(['reboundAtEdge'], (result) => {
+      try {
+        const atLimit = isAtScrollLimit(currentDirection);
+
         try {
-          const rebound = !!result.reboundAtEdge;
-          const atLimit = isAtScrollLimit(currentDirection);
-
-          try {
-            if (scrollTarget && scrollTarget !== window && !document.contains(scrollTarget)) {
-              console.log('Scroll target was removed from DOM; resetting scrollTarget');
-              scrollTarget = null;
-              scrollMethod = 'window';
-            }
-          } catch (err) {
+          if (scrollTarget && scrollTarget !== window && !document.contains(scrollTarget)) {
+            scrollTarget = null;
+            scrollTargetDetected = false;
+            scrollMethod = 'window';
           }
-
-          if (atLimit) {
-            if (rebound) {
-              const oldDirection = currentDirection;
-              currentDirection = -currentDirection;
-              console.log('Rebound: reversed direction from', oldDirection > 0 ? 'down' : 'up', 'to', currentDirection > 0 ? 'down' : 'up');
-
-              chrome.runtime.sendMessage({
-                action: 'reboundDirectionChange',
-                newDirection: currentDirection > 0 ? 'down' : 'up',
-                oldDirection: oldDirection > 0 ? 'down' : 'up'
-              }).catch(err => {
-                console.log('Could not notify popup of rebound:', err.message);
-              });
-
-            } else {
-              if (!atEdgeCheckInProgress) {
-                atEdgeCheckInProgress = true;
-                lastKnownScrollHeight = (function () {
-                  try {
-                    switch (scrollMethod) {
-                      case 'window': return document.documentElement.scrollHeight || document.body.scrollHeight || 0;
-                      case 'element':
-                      case 'documentElement': return scrollTarget ? (scrollTarget.scrollHeight || 0) : (document.documentElement.scrollHeight || 0);
-                      default: return document.documentElement.scrollHeight || 0;
-                    }
-                  } catch (e) { return document.documentElement.scrollHeight || 0; }
-                })();
-
-                atEdgeTimeout = setTimeout(() => {
-                  atEdgeCheckInProgress = false;
-                  try {
-                    const newHeight = (function () {
-                      try {
-                        switch (scrollMethod) {
-                          case 'window': return document.documentElement.scrollHeight || document.body.scrollHeight || 0;
-                          case 'element':
-                          case 'documentElement': return scrollTarget ? (scrollTarget.scrollHeight || 0) : (document.documentElement.scrollHeight || 0);
-                          default: return document.documentElement.scrollHeight || 0;
-                        }
-                      } catch (e) { return document.documentElement.scrollHeight || 0; }
-                    })();
-
-                    if (newHeight > lastKnownScrollHeight + 30) {
-                      console.log('New content detected while at edge (height increased from', lastKnownScrollHeight, 'to', newHeight, '), continuing scroll');
-                    } else {
-                      console.log('No new content detected after waiting, stopping scroll');
-                      isScrolling = false;
-                      currentDirection = 0;
-                      clearInterval(intervalId);
-                      intervalId = null;
-
-                      chrome.runtime.sendMessage({
-                        action: 'scrollStopped',
-                        reason: 'reachedEdge',
-                        direction: currentDirection > 0 ? 'down' : 'up'
-                      }).catch(err => {
-                        console.log('Could not notify popup:', err.message);
-                      });
-                      return;
-                    }
-                  } catch (error) {
-                    console.error('Error during edge re-check:', error);
-                    isScrolling = false;
-                    currentDirection = 0;
-                    clearInterval(intervalId);
-                    intervalId = null;
-                  }
-                }, 1500);
-              }
-            }
-          }
-          
-          requestAnimationFrame(() => {
-            smartScroll(currentDirection, mapSpeed);
-          });
-          
-        } catch (error) {
-          console.error('Error in scroll function:', error);
-          isScrolling = false;
-          currentDirection = 0;
-          clearInterval(intervalId);
-          intervalId = null;
+        } catch (err) {
         }
-      });
-    }, (scaling+1) - mapSpeed);
+
+        if (atLimit) {
+          if (cachedReboundSetting) {
+            const oldDirection = currentDirection;
+            currentDirection = -currentDirection;
+
+            chrome.runtime.sendMessage({
+              action: 'reboundDirection',
+              oldDirection: oldDirection > 0 ? 'down' : 'up',
+              newDirection: currentDirection > 0 ? 'down' : 'up'
+            }).catch(err => {
+            });
+
+          } else {
+            const stoppedDirection = currentDirection > 0 ? 'down' : 'up';
+            
+            isScrolling = false;
+            currentDirection = 0;
+            clearInterval(intervalId);
+            intervalId = null;
+
+            chrome.runtime.sendMessage({
+              action: 'scrollStopped',
+              reason: 'reachedEdge',
+              direction: stoppedDirection
+            }).catch(err => {
+            });
+
+            if (!atEdgeCheckInProgress) {
+              atEdgeCheckInProgress = true;
+              
+              lastKnownScrollHeight = (function () {
+                try {
+                  switch (scrollMethod) {
+                    case 'window': return document.documentElement.scrollHeight || document.body.scrollHeight || 0;
+                    case 'element':
+                    case 'documentElement': return scrollTarget ? (scrollTarget.scrollHeight || 0) : (document.documentElement.scrollHeight || 0);
+                    default: return document.documentElement.scrollHeight || 0;
+                  }
+                } catch (e) { return document.documentElement.scrollHeight || 0; }
+              })();
+
+              let checkCount = 0;
+              const maxChecks = 40;
+              
+              const checkForNewContent = () => {
+                checkCount++;
+                try {
+                  const newHeight = (function () {
+                    try {
+                      switch (scrollMethod) {
+                        case 'window': return document.documentElement.scrollHeight || document.body.scrollHeight || 0;
+                        case 'element':
+                        case 'documentElement': return scrollTarget ? (scrollTarget.scrollHeight || 0) : (document.documentElement.scrollHeight || 0);
+                        default: return document.documentElement.scrollHeight || 0;
+                      }
+                    } catch (e) { return document.documentElement.scrollHeight || 0; }
+                  })();
+
+                  if (newHeight > lastKnownScrollHeight + 30) {
+                    atEdgeCheckInProgress = false;
+                    currentDirection = stoppedDirection === 'down' ? 1 : -1;
+                    isScrolling = true;
+                    startScrolling();
+                    
+                    chrome.runtime.sendMessage({
+                      action: 'scrollResumed',
+                      direction: stoppedDirection
+                    }).catch(err => {
+                    });
+                  } else if (checkCount < maxChecks) {
+                    atEdgeTimeout = setTimeout(checkForNewContent, 1500);
+                  } else {
+                    atEdgeCheckInProgress = false;
+                  }
+                } catch (error) {
+                  atEdgeCheckInProgress = false;
+                }
+              };
+              
+              atEdgeTimeout = setTimeout(checkForNewContent, 1500);
+            }
+            return;
+          }
+        }
+        
+        if (isScrolling) {
+          requestAnimationFrame(() => {
+            smartScroll(currentDirection, scrollDistance);
+          });
+        }
+        
+      } catch (error) {
+        isScrolling = false;
+        currentDirection = 0;
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    }, 16);
   } catch (error) {
-    console.error('Error starting scroll:', error);
     isScrolling = false;
     currentDirection = 0;
   }
