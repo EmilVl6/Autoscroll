@@ -25,8 +25,8 @@
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   border: 0;
   border-radius: 50%;
   background-image: url('UI & Design Elements/Slider_Thumb.png'); 
@@ -36,8 +36,8 @@
 }
 
 .slider::-moz-range-thumb {
-  width: 16px;
-  height: 16px;
+  width: 15px;
+  height: 15px;
   border: 0;
   border-radius: 50%;
   background-image: url('UI & Design Elements/Slider_Thumb.png'); 

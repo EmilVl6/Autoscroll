@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (messageEl) {
                 messageEl.style.display = 'none';
             }
-        }, 3000);
+        }, 5000);
     }
 
     function getSpeedLabel(value) {

@@ -18,6 +18,24 @@ chrome.commands && chrome.commands.onCommand && chrome.commands.onCommand.addLis
         }
         
         if (direction) {
+            const restrictedPages = [
+                'chrome://',
+                'chrome-extension://',
+                'moz-extension://',
+                'edge://',
+                'about:',
+                'file://'
+            ];
+            
+            const isRestrictedPage = restrictedPages.some(prefix => 
+                activeTab.url && activeTab.url.startsWith(prefix)
+            );
+            
+            if (isRestrictedPage) {
+                notifyPopupOfShortcutError('Cannot scroll on this type of page, sorry :(');
+                return;
+            }
+            
             chrome.storage.sync.get(['scrollSpeed'], function(result) {
                 if (chrome.runtime.lastError) {
                     const speed = 50;

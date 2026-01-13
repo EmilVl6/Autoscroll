@@ -10,7 +10,7 @@
   cursor: pointer;
   display: inline-flex;
   fill: currentcolor;
-  font-family: sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 14px;
   font-weight: 500;
   justify-content: center;

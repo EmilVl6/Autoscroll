@@ -53,10 +53,15 @@ const imageData = [
 
 let currentImageIndex = 0;
 
-logoButton.addEventListener('click', () => {
-    currentImageIndex = (currentImageIndex + 1) % imageData.length;
-    const currentData = imageData[currentImageIndex];
+chrome.storage.sync.get(['themeIndex'], (result) => {
+    if (result.themeIndex !== undefined) {
+        currentImageIndex = result.themeIndex;
+        applyTheme(currentImageIndex);
+    }
+});
 
+function applyTheme(index) {
+    const currentData = imageData[index];
     logoImage.src = currentData.srcl;
     helpImage.src = currentData.srch;
     settingsImage.src = currentData.srcs;
@@ -64,8 +69,13 @@ logoButton.addEventListener('click', () => {
     const variableColor = currentData.textColor;
     h1Element.style.background = `linear-gradient(to right, rgba(255, 215, 255, 0) 0%, rgba(225, 255, 255, 0) 20%, rgba(255, 255, 255, 0) 61%), linear-gradient(${variableColor})`;
     h1Element.style.backgroundClip = 'text';
+    sped.style.color = currentData.txt;
+    sent.style.color = currentData.txt;
+    speedLabel.style.color = currentData.txt;
+}
 
-    sped.style.color=currentData.txt;
-    sent.style.color=currentData.txt;
-    speedLabel.style.color=currentData.txt;
+logoButton.addEventListener('click', () => {
+    currentImageIndex = (currentImageIndex + 1) % imageData.length;
+    applyTheme(currentImageIndex);
+    chrome.storage.sync.set({ themeIndex: currentImageIndex });
 });
