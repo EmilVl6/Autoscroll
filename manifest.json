@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "Autoscroll : Automatic Page Scrolling",
-    "description": "Cleanest web-extension to seamlessly scroll any webpage",
+    "description": "Cleanest web extension to seamlessly scroll a webpage",
     "version": "3.0.0",
     "permissions":[
       "storage",
